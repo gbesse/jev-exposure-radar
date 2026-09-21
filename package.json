@@ -1,0 +1,21 @@
+{
+  "name": "jev-exposure-radar",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Trace DeFi incident exposure through sourced portfolio dependencies with optional Jev classification.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gbesse/jev-exposure-radar.git"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test test/*.test.js",
+    "check": "node --check src/server.js && node --check public/app.js",
+    "eval": "node src/evaluate.js"
+  }
+}

@@ -1,0 +1,39 @@
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money=n=>new Intl.NumberFormat('fr-FR',{style:'currency',currency:'USD',maximumFractionDigits:2}).format(n);
+const pct=n=>new Intl.NumberFormat('fr-FR',{style:'percent',maximumFractionDigits:1}).format(n);
+let data, reports={},origins={contracts:'synthetic',exposure:'synthetic'};
+async function api(path,body){const response=await fetch(path,body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{});const result=await response.json();if(!response.ok)throw Error(result.error||'Requête impossible');return result;}
+function toast(message){$('toast').textContent=message;$('toast').hidden=false;setTimeout(()=>$('toast').hidden=true,7000);}
+async function action(button,fn){button.disabled=true;try{await fn();}catch(e){toast(e.message);}finally{button.disabled=false;}}
+function stat(label,value,sub){return `<article class="stat"><div class="label">${esc(label)}</div><div class="value">${esc(value)}</div><small>${esc(sub)}</small></article>`;}
+function save(name,value){const url=URL.createObjectURL(new Blob([JSON.stringify(value,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+function renderExposure(r){
+  $('exposure-stats').innerHTML=stat('PORTEFEUILLE FOURNI',money(r.totalValueUsd),'Valorisation des positions importées')+stat('EXPOSITION POTENTIELLE · MAX.',money(r.potentialExposureUpperBoundUsd),'Borne haute, pas une estimation de perte')+stat('SIGNALEMENTS ACTIFS',r.alerts.filter(a=>a.affected.length).length,`${r.ignored.length} signalements exclus du replay`);
+  const labels=new Map(data.exposure.nodes.map(n=>[n.id,n.label]));
+  $('graph').innerHTML=data.exposure.edges.filter(e=>Date.parse(e.observedAt)<=Date.parse(r.asOf)).map(e=>`<div class="graph-row"><span class="node">${esc(labels.get(e.from))}</span><span class="edge">${e.kind==='allocation'?pct(e.fraction):'dépend de'} →</span><span class="node">${esc(labels.get(e.to))}</span></div>`).join('')||'<p>Aucun lien connu à cet instant.</p>';
+  $('exposure-results').innerHTML=r.alerts.map(a=>`<article class="card"><div class="card-head"><div><div class="eyebrow">${esc(a.incident.id)} / ${esc(a.incident.observedAt)}</div><h3>${esc(a.incident.title)}</h3></div><span class="tag ${a.status==='alert'?'red':'amber'}">${a.status==='alert'?'Confirmé dans la source':a.status==='watch'?'Allégation à vérifier':'Aucun chemin connu'}</span></div><div class="proof-line"><span>Positions potentiellement concernées</span><b class="net">${money(a.upperBoundUsd)}</b></div>${a.affected.map(p=>`<div class="path"><strong>${esc(p.id)} · ${money(p.upperBoundUsd)} au maximum</strong>${p.paths.map(x=>`${x.labels.map(esc).join(' → ')} <span class="muted">(${pct(x.fraction)})</span>`).join('<br>')}</div>`).join('')}<details><summary>Voir les sources et les limites</summary><p>${esc(a.incident.evidence)}</p>${a.affected.flatMap(p=>p.paths).map(p=>`<p>${p.evidence.map(esc).join('<br>')}</p>`).join('')}<p>${esc(r.interpretation)}</p></details></article>`).join('')+(r.alerts.length?'':'<div class="empty">Aucun incident actif connu à cet instant.</div>')+`<div class="warning"><strong>${r.gaps.length} zones de couverture incomplète</strong><br>${r.gaps.map(g=>esc(g.label)).join(' · ')||'Aucune zone déclarée incomplète dans les données fournies.'}<br>${esc(r.valuationNote)}</div><details class="card"><summary>Signalements exclus du replay (${r.ignored.length})</summary>${r.ignored.map(x=>`<p>${esc(x.id)} · ${esc({'not-yet-known':'Pas encore connu à cet instant',resolved:'Résolu',benign:'Sans incident'}[x.reason])}</p>`).join('')}</details>`;
+}
+async function runExposure(){const next={...data.exposure,asOf:new Date($('replay').value+'Z').toISOString()};const r=await api('/api/exposure',next);data.exposure=next;reports.exposure=r;renderExposure(r);}
+function sync(){$('replay').value=new Date(data.exposure.asOf).toISOString().slice(0,16);$('dataset-label').textContent=origins['exposure']==='synthetic'?data.label:'DONNÉES IMPORTÉES — provenance à vérifier';}
+async function reset(){data=await api('/api/demo');origins={contracts:'synthetic',exposure:'synthetic'};sync();await runExposure();}
+for(const button of document.querySelectorAll('[data-tab]'))button.onclick=()=>{document.querySelectorAll('.page').forEach(p=>p.hidden=p.id!==button.dataset.tab);document.querySelectorAll('.nav').forEach(b=>b.classList.toggle('active',b===button));};
+$('run-exposure').onclick=()=>action($('run-exposure'),runExposure);$('reset').onclick=()=>action($('reset'),reset);
+for(const kind of ['exposure']){
+  $('export-'+kind).onclick=()=>save(`jev-${kind}-dossier.json`,{origin:origins[kind],exportedAt:new Date().toISOString(),input:data[kind],report:reports[kind]});
+  $('template-'+kind).onclick=()=>save(`jev-${kind}-input.json`,data[kind]);
+  $('import-'+kind).onchange=async e=>{try{const file=e.target.files[0];if(!file)return;if(file.size>1e6)throw Error('Fichier trop grand (1 Mo maximum)');const parsed=JSON.parse(await file.text());const input=parsed.input??parsed;const r=await api('/api/'+kind,input);data[kind]=input;reports[kind]=r;origins[kind]='imported';sync();renderExposure(r);toast('Données importées et analysées.');}catch(err){toast(err.message);}finally{e.target.value='';}};
+}
+for(const kind of ['protocols'])$('discover-'+kind).onclick=()=>action($('discover-'+kind),async()=>{
+  $('source-results').innerHTML='<div class="card">Lecture de la source publique…</div>';
+  try{const r=await api('/api/discover/'+kind);$('source-results').innerHTML=`<article class="card"><span class="tag green">Source publique · ${esc(r.source)}</span><p>${esc(r.notice)}</p><p class="hint">Observé : ${esc(r.observedAt)}</p>${(r.markets||r.protocols).map(x=>`<div class="source-row"><a href="${esc(x.url)}" target="_blank" rel="noreferrer">${esc(x.title||x.label)} ↗</a><small>${esc(x.rulesText||x.category||'')}${x.tvlUsd!==undefined?' · TVL globale '+(x.tvlUsd===null?'indisponible':money(x.tvlUsd)):''}</small></div>`).join('')||'<p>Aucun résultat dans cet échantillon.</p>'}</article>`;}catch(e){$('source-results').innerHTML=`<div class="error">${esc(e.message)}<br>Les exemples fictifs restent disponibles dans le module.</div>`;}
+});
+$('judge-task').onchange=()=>{$('right-label').hidden=$('judge-task').value==='incident';$('judge-help').textContent=$('judge-task').value==='incident'?'Les cibles proposées sont les nœuds du portefeuille actuellement chargé. Le modèle classe le texte ; il ne vérifie pas la source.':'Les calculs de dates, de seuils et de paiements restent dans le moteur déterministe.';};
+$('run-judge').onclick=()=>action($('run-judge'),async()=>{
+  $('judge-results').textContent='Évaluation…';
+  const task=$('judge-task').value;
+  const payload={task,text:$('judge-left').value,targets:data.exposure.nodes.map(n=>({id:n.id,label:n.label}))};
+  try{const r=await api('/api/judge',payload);$('judge-results').innerHTML=`<p>${esc(r.notice)}</p>${Object.entries(r.answers).map(([k,a])=>`<h3>${esc(k)} → ${esc(a.choice)}</h3><div class="probabilities">${Object.entries(a.probabilities).map(([k,p])=>`<span>${esc(k)} : ${pct(p)}</span>`).join('')}</div><p class="hint">Concentration de la distribution : ${pct(a.confidence)}</p>`).join('')}<details><summary>Reçu d’évaluation : modèle, latence, empreinte</summary><pre>${esc(JSON.stringify(r,null,2))}</pre></details>`;}catch(e){$('judge-results').innerHTML=`<div class="error">${esc(e.message)}</div>`;}
+});
+$('judge-task').onchange();
+try{await reset();const status=await api('/api/status');$('provider').textContent=status.jevConfigured?`JEV CONFIGURÉ · ${status.model}`:'MOTEURS LOCAUX · JEV NON CONFIGURÉ';}catch(e){toast(e.message);}

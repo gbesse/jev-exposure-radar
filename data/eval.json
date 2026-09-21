@@ -1,0 +1,90 @@
+[
+  {
+    "id": "withdrawal",
+    "input": {
+      "task": "incident",
+      "text": "Helios official statement: withdrawals are currently suspended due to an ongoing operational incident.",
+      "targets": [
+        {
+          "id": "helios",
+          "label": "Helios protocol"
+        },
+        {
+          "id": "orion",
+          "label": "Orion bridge"
+        }
+      ]
+    },
+    "expected": {
+      "target": "helios",
+      "status": "confirmed",
+      "kind": "withdrawals"
+    }
+  },
+  {
+    "id": "rumor",
+    "input": {
+      "task": "incident",
+      "text": "An anonymous account alleges Orion suffered an exploit. The report is unverified and Orion has not confirmed it.",
+      "targets": [
+        {
+          "id": "helios",
+          "label": "Helios protocol"
+        },
+        {
+          "id": "orion",
+          "label": "Orion bridge"
+        }
+      ]
+    },
+    "expected": {
+      "target": "orion",
+      "status": "alleged",
+      "kind": "exploit"
+    }
+  },
+  {
+    "id": "benign",
+    "input": {
+      "task": "incident",
+      "text": "Helios announces routine website maintenance; withdrawals and all financial operations continue normally.",
+      "targets": [
+        {
+          "id": "helios",
+          "label": "Helios protocol"
+        },
+        {
+          "id": "orion",
+          "label": "Orion bridge"
+        }
+      ]
+    },
+    "expected": {
+      "target": "helios",
+      "status": "benign",
+      "kind": "other"
+    }
+  },
+  {
+    "id": "retrospective",
+    "input": {
+      "task": "incident",
+      "text": "Historical review: Orion had an oracle outage in 2020. It was resolved then. There is no current incident.",
+      "targets": [
+        {
+          "id": "helios",
+          "label": "Helios protocol"
+        },
+        {
+          "id": "orion",
+          "label": "Orion bridge"
+        }
+      ]
+    },
+    "expected": {
+      "target": "orion",
+      "status": "benign",
+      "kind": "oracle"
+    }
+  }
+]
