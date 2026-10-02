@@ -68,3 +68,7 @@ Le jeu d’évaluation contient quatre cas synthétiques. L’option `--live` r�
 [MIT](LICENSE). Projet indépendant, sans affiliation revendiquée avec TypeSafe ou les fournisseurs de données.
 
 Projet compagnon : [jev-contract-graph](https://github.com/gbesse/jev-contract-graph).
+
+## Replay temporel hors ligne
+
+`npm run demo:timeline` rejoue quatre instants du portefeuille synthétique dans `data/demo.json` et affiche les incidents connus, ceux ignorés et la borne haute d’exposition à chaque instant. Aucun appel réseau ni clé Jev ; les valorisations sont celles du fichier de démonstration, pas des cours historiques.
