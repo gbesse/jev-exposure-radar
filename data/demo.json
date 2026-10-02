@@ -124,7 +124,8 @@
         "publishedAt": "2026-09-20T10:00:00Z",
         "observedAt": "2026-09-20T10:01:00Z",
         "evidence": "Communiqué fictif — scénario pédagogique, aucun incident réel.",
-        "resolvedAt": "2026-09-20T13:00:00Z"
+        "resolvedAt": "2026-09-20T13:00:00Z",
+        "resolutionObservedAt": "2026-09-20T13:00:00Z"
       }
     ]
   }

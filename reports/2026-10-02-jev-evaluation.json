@@ -1,0 +1,378 @@
+{
+  "mode": "live",
+  "generatedAt": "2026-10-02T15:17:57.633Z",
+  "datasetNotice": "Les fixtures fournies sont synthétiques et réduites. Ces scores ne démontrent ni calibration financière ni état de l’art.",
+  "aggregate": {
+    "questions": 12,
+    "accuracy": 1,
+    "multiclassBrier": 0.0014500000000000014,
+    "threshold": 0.8,
+    "coverage": 1,
+    "selectiveAccuracy": 1
+  },
+  "byQuestion": {
+    "target": {
+      "questions": 4,
+      "accuracy": 1,
+      "multiclassBrier": 0.0006500000000000006,
+      "threshold": 0.8,
+      "coverage": 1,
+      "selectiveAccuracy": 1
+    },
+    "status": {
+      "questions": 4,
+      "accuracy": 1,
+      "multiclassBrier": 0.0022000000000000023,
+      "threshold": 0.8,
+      "coverage": 1,
+      "selectiveAccuracy": 1
+    },
+    "kind": {
+      "questions": 4,
+      "accuracy": 1,
+      "multiclassBrier": 0.0015000000000000013,
+      "threshold": 0.8,
+      "coverage": 1,
+      "selectiveAccuracy": 1
+    }
+  },
+  "rows": [
+    {
+      "id": "withdrawal",
+      "question": "target",
+      "expected": "helios",
+      "choice": "helios",
+      "probabilities": {
+        "unknown": 0.02,
+        "helios": 0.98,
+        "orion": 0
+      },
+      "confidence": 0.97
+    },
+    {
+      "id": "withdrawal",
+      "question": "status",
+      "expected": "confirmed",
+      "choice": "confirmed",
+      "probabilities": {
+        "unknown": 0.04,
+        "alleged": 0.02,
+        "benign": 0,
+        "confirmed": 0.94
+      },
+      "confidence": 0.92
+    },
+    {
+      "id": "withdrawal",
+      "question": "kind",
+      "expected": "withdrawals",
+      "choice": "withdrawals",
+      "probabilities": {
+        "exploit": 0,
+        "withdrawals": 0.98,
+        "depeg": 0,
+        "other": 0.02,
+        "oracle": 0
+      },
+      "confidence": 0.98
+    },
+    {
+      "id": "rumor",
+      "question": "target",
+      "expected": "orion",
+      "choice": "orion",
+      "probabilities": {
+        "orion": 0.99,
+        "helios": 0,
+        "unknown": 0.01
+      },
+      "confidence": 0.98
+    },
+    {
+      "id": "rumor",
+      "question": "status",
+      "expected": "alleged",
+      "choice": "alleged",
+      "probabilities": {
+        "benign": 0,
+        "confirmed": 0,
+        "unknown": 0,
+        "alleged": 1
+      },
+      "confidence": 1
+    },
+    {
+      "id": "rumor",
+      "question": "kind",
+      "expected": "exploit",
+      "choice": "exploit",
+      "probabilities": {
+        "oracle": 0,
+        "depeg": 0,
+        "other": 0.03,
+        "exploit": 0.97,
+        "withdrawals": 0
+      },
+      "confidence": 0.96
+    },
+    {
+      "id": "benign",
+      "question": "target",
+      "expected": "helios",
+      "choice": "helios",
+      "probabilities": {
+        "orion": 0,
+        "helios": 0.98,
+        "unknown": 0.02
+      },
+      "confidence": 0.97
+    },
+    {
+      "id": "benign",
+      "question": "status",
+      "expected": "benign",
+      "choice": "benign",
+      "probabilities": {
+        "confirmed": 0.04,
+        "alleged": 0,
+        "unknown": 0,
+        "benign": 0.96
+      },
+      "confidence": 0.94
+    },
+    {
+      "id": "benign",
+      "question": "kind",
+      "expected": "other",
+      "choice": "other",
+      "probabilities": {
+        "depeg": 0,
+        "oracle": 0,
+        "withdrawals": 0.01,
+        "other": 0.99,
+        "exploit": 0
+      },
+      "confidence": 0.98
+    },
+    {
+      "id": "retrospective",
+      "question": "target",
+      "expected": "orion",
+      "choice": "orion",
+      "probabilities": {
+        "unknown": 0.02,
+        "helios": 0,
+        "orion": 0.98
+      },
+      "confidence": 0.97
+    },
+    {
+      "id": "retrospective",
+      "question": "status",
+      "expected": "benign",
+      "choice": "benign",
+      "probabilities": {
+        "benign": 1,
+        "alleged": 0,
+        "unknown": 0,
+        "confirmed": 0
+      },
+      "confidence": 1
+    },
+    {
+      "id": "retrospective",
+      "question": "kind",
+      "expected": "oracle",
+      "choice": "oracle",
+      "probabilities": {
+        "other": 0.04,
+        "withdrawals": 0,
+        "exploit": 0,
+        "depeg": 0,
+        "oracle": 0.96
+      },
+      "confidence": 0.95
+    }
+  ],
+  "receipts": [
+    {
+      "id": "withdrawal",
+      "receipt": {
+        "provider": "typesafe",
+        "requestedModel": "jev-1.13.0",
+        "resolvedModel": "jev-1.13.0",
+        "answers": {
+          "target": {
+            "choice": "helios",
+            "probabilities": {
+              "unknown": 0.02,
+              "helios": 0.98,
+              "orion": 0
+            },
+            "confidence": 0.97
+          },
+          "status": {
+            "choice": "confirmed",
+            "probabilities": {
+              "unknown": 0.04,
+              "alleged": 0.02,
+              "benign": 0,
+              "confirmed": 0.94
+            },
+            "confidence": 0.92
+          },
+          "kind": {
+            "choice": "withdrawals",
+            "probabilities": {
+              "exploit": 0,
+              "withdrawals": 0.98,
+              "depeg": 0,
+              "other": 0.02,
+              "oracle": 0
+            },
+            "confidence": 0.98
+          }
+        },
+        "latencyMs": 340,
+        "requestHash": "526114e834dd38e722c330a2d3c452ee50fb30dd6246493c82cf59dc9bd3a879",
+        "observedAt": "2026-10-02T15:17:56.699Z",
+        "notice": "Jugement sémantique à revoir. Ne certifie ni les clauses, ni la réalité de l’incident, ni une rentabilité."
+      }
+    },
+    {
+      "id": "rumor",
+      "receipt": {
+        "provider": "typesafe",
+        "requestedModel": "jev-1.13.0",
+        "resolvedModel": "jev-1.13.0",
+        "answers": {
+          "target": {
+            "choice": "orion",
+            "probabilities": {
+              "orion": 0.99,
+              "helios": 0,
+              "unknown": 0.01
+            },
+            "confidence": 0.98
+          },
+          "status": {
+            "choice": "alleged",
+            "probabilities": {
+              "benign": 0,
+              "confirmed": 0,
+              "unknown": 0,
+              "alleged": 1
+            },
+            "confidence": 1
+          },
+          "kind": {
+            "choice": "exploit",
+            "probabilities": {
+              "oracle": 0,
+              "depeg": 0,
+              "other": 0.03,
+              "exploit": 0.97,
+              "withdrawals": 0
+            },
+            "confidence": 0.96
+          }
+        },
+        "latencyMs": 250,
+        "requestHash": "4c4ae66a0c72c84f0b07ba5e76a0c0eae79a3fd6b185c29d2504a43fdcd37a3d",
+        "observedAt": "2026-10-02T15:17:56.950Z",
+        "notice": "Jugement sémantique à revoir. Ne certifie ni les clauses, ni la réalité de l’incident, ni une rentabilité."
+      }
+    },
+    {
+      "id": "benign",
+      "receipt": {
+        "provider": "typesafe",
+        "requestedModel": "jev-1.13.0",
+        "resolvedModel": "jev-1.13.0",
+        "answers": {
+          "target": {
+            "choice": "helios",
+            "probabilities": {
+              "orion": 0,
+              "helios": 0.98,
+              "unknown": 0.02
+            },
+            "confidence": 0.97
+          },
+          "status": {
+            "choice": "benign",
+            "probabilities": {
+              "confirmed": 0.04,
+              "alleged": 0,
+              "unknown": 0,
+              "benign": 0.96
+            },
+            "confidence": 0.94
+          },
+          "kind": {
+            "choice": "other",
+            "probabilities": {
+              "depeg": 0,
+              "oracle": 0,
+              "withdrawals": 0.01,
+              "other": 0.99,
+              "exploit": 0
+            },
+            "confidence": 0.98
+          }
+        },
+        "latencyMs": 453,
+        "requestHash": "9d810109ff0849d0bfac5ef1617e000f7ad0c8c7c9fd86ef98156bc85dd90446",
+        "observedAt": "2026-10-02T15:17:57.403Z",
+        "notice": "Jugement sémantique à revoir. Ne certifie ni les clauses, ni la réalité de l’incident, ni une rentabilité."
+      }
+    },
+    {
+      "id": "retrospective",
+      "receipt": {
+        "provider": "typesafe",
+        "requestedModel": "jev-1.13.0",
+        "resolvedModel": "jev-1.13.0",
+        "answers": {
+          "target": {
+            "choice": "orion",
+            "probabilities": {
+              "unknown": 0.02,
+              "helios": 0,
+              "orion": 0.98
+            },
+            "confidence": 0.97
+          },
+          "status": {
+            "choice": "benign",
+            "probabilities": {
+              "benign": 1,
+              "alleged": 0,
+              "unknown": 0,
+              "confirmed": 0
+            },
+            "confidence": 1
+          },
+          "kind": {
+            "choice": "oracle",
+            "probabilities": {
+              "other": 0.04,
+              "withdrawals": 0,
+              "exploit": 0,
+              "depeg": 0,
+              "oracle": 0.96
+            },
+            "confidence": 0.95
+          }
+        },
+        "latencyMs": 230,
+        "requestHash": "ee0e774126b804e7930c6983b69c6b4ae4eafe812290eaec0b4a1a45ed8daf83",
+        "observedAt": "2026-10-02T15:17:57.633Z",
+        "notice": "Jugement sémantique à revoir. Ne certifie ni les clauses, ni la réalité de l’incident, ni une rentabilité."
+      }
+    }
+  ],
+  "evaluationDate": "2026-10-02",
+  "datasetSha256": "48f945413324139a89c16b37d23174b9c9417f186eae7f2bf9cb0b23dd28429d",
+  "protocol": "Four existing synthetic cases, three questions each, one call per case. No prompt or label changes after observing the results. Not a held-out benchmark."
+}

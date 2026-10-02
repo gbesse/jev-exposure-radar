@@ -33,3 +33,7 @@ test('serveur: analyse, import invalide, origine interdite, chemins privés',asy
  const hostStatus=await new Promise((resolve,reject)=>{const q=httpRequest(base+'/api/status',{headers:{Host:'evil.example:4317'}},r=>{r.resume();resolve(r.statusCode);});q.on('error',reject);q.end();});assert.equal(hostStatus,403);
  const html=await fetch(base);assert.ok(html.headers.get('content-security-policy').includes("frame-ancestors 'none'"));assert.match(await html.text(),/Exposure Radar/);
 });
+
+test('une erreur de certificat est explicite et ne désactive pas TLS',async()=>{
+ await assert.rejects(()=>discoverMarkets(async()=>{throw Object.assign(new Error('fetch failed'),{cause:{code:'CERT_HAS_EXPIRED'}});}),/certificat TLS/);
+});

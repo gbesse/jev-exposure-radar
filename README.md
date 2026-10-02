@@ -27,11 +27,11 @@ Le scénario initial est entièrement fictif. Modifier les paramètres, inspecte
 - `nodes`: identifiant, nom, `coverageComplete` déclaré.
 - `edges`: `from`, `to`, `kind`, `fraction`, `evidence`, `observedAt`.
 - `positions`: identifiant de position, nœud détenu, `valueUsd`, `observedAt`.
-- `incidents`: identifiant, cible, titre, `status` (`confirmed`, `alleged`, `benign`), preuve, `publishedAt`, `observedAt`, éventuellement `resolvedAt`.
+- `incidents`: identifiant, cible, titre, `status` (`confirmed`, `alleged`, `benign`), preuve, `publishedAt`, `observedAt`, éventuellement `resolvedAt` avec `resolutionObservedAt` (date à laquelle la résolution est devenue connue).
 
 Une `allocation` pondère la fraction détenue. Une `dependency` porte sur toute la branche (`fraction: 1`). Les fractions se multiplient le long des chemins. Les chemins et incidents peuvent se recouper : leur somme est plafonnée par position pour produire une **borne haute**, sans prétendre connaître exactement leurs intersections. Le résultat n’est pas une perte attendue.
 
-Le graphe doit être acyclique ; les allocations sortantes ne dépassent pas 100 %. Les liens et incidents non encore observés sont exclus du replay. Les incidents résolus ou bénins sont exclus des alertes. Les valorisations sont celles fournies, pas des prix historiques reconstitués. Fournir un snapshot de graphe valable à l’instant étudié : cette version ne gère pas encore les changements d’allocation, les liens supprimés et leurs périodes de validité. `coverageComplete` est déclaratif ; aucun chemin connu ne prouve l’absence de risque.
+Le graphe doit être acyclique ; les allocations sortantes ne dépassent pas 100 %. Les liens et incidents non encore observés sont exclus du replay. Les incidents bénins ou dont la résolution a déjà été observée sont exclus des alertes. Une résolution sans date d’observation déclenche un avertissement et conserve l’incident. Les fractions positives ne sont pas arrondies avant calcul ; les allocations partielles sont signalées même sur un nœud déclaré complet. Les valorisations sont celles fournies, pas des prix historiques reconstitués. Fournir un snapshot de graphe valable à l’instant étudié : cette version ne gère pas encore les changements d’allocation, les liens supprimés et leurs périodes de validité. `coverageComplete` est déclaratif ; aucun chemin connu ne prouve l’absence de risque.
 
 
 ## Jev, en option
@@ -44,7 +44,7 @@ node --env-file=.env src/server.js
 
 La clé reste côté serveur. Les textes saisis sont envoyés à TypeSafe uniquement lorsque vous cliquez sur « Évaluer avec Jev ». La classification d’incident envoie aussi les noms des cibles proposées. Les jugements restent séparés de la validation des données : Jev ne certifie ni les clauses ni la réalité d’un incident, et ne modifie pas les analyses automatiquement.
 
-L’adaptateur utilise la [System One API](https://docs.typesafe.ai/api), avec `jev-1.13.0` par défaut. Les distributions sont validées ; les reçus incluent modèle demandé/résolu, empreinte de requête et latence. Une erreur ne devient jamais un résultat fictif. Aucun appel réel à Jev n’a été exécuté à la publication, faute de clé configurée.
+L’adaptateur utilise la [System One API](https://docs.typesafe.ai/api), avec `jev-1.13.0` par défaut. Les distributions sont validées ; les reçus incluent modèle demandé/résolu, empreinte de requête et latence. Une erreur ne devient jamais un résultat fictif. Des appels réels ont été exécutés le 2 octobre 2026 : voir la [revue et les résultats](docs/REVIEW-2026-10-02.md).
 
 ## Sources publiques
 

@@ -1,5 +1,12 @@
 import {assert} from './validation.js';
-async function read(url,fetcher){const r=await fetcher(url,{signal:AbortSignal.timeout(12000)});assert(r.ok,`Source indisponible (HTTP ${r.status})`);return r.json();}
+async function read(url,fetcher){
+  let r;
+  try {r=await fetcher(url,{signal:AbortSignal.timeout(12000)});} catch(error) {
+    if(['CERT_HAS_EXPIRED','ERR_TLS_CERT_ALTNAME_INVALID','UNABLE_TO_VERIFY_LEAF_SIGNATURE','DEPTH_ZERO_SELF_SIGNED_CERT'].includes(error.cause?.code))throw new Error('Source indisponible : certificat TLS invalide ou expiré.');
+    throw error;
+  }
+  assert(r.ok,`Source indisponible (HTTP ${r.status})`);return r.json();
+}
 export async function discoverMarkets(fetcher=fetch){
   const rows=await read('https://gamma-api.polymarket.com/markets?limit=100&active=true&closed=false',fetcher);
   assert(Array.isArray(rows),'Format Gamma inattendu');

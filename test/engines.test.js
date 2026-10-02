@@ -22,3 +22,23 @@ test('cycles, nœuds inconnus et allocations >100% sont rejetés',()=>{
 });
 test('liens futurs sont exclus du replay',()=>{const d=demo().exposure;d.edges[2].observedAt='2026-09-22T00:00:00Z';assert.equal(analyzeExposure(d).alerts.find(a=>a.incident.id==='i1').upperBoundUsd,0);});
 test('absence de chemin connue reste explicite',()=>{const d=demo().exposure;d.edges=[];const r=analyzeExposure(d);assert.equal(r.alerts[0].status,'no-known-path');assert.match(r.interpretation,/ne signifie pas absence/);});
+test('résolution tardivement observée ne fuit pas dans le passé',()=>{
+ const d=demo().exposure;d.incidents=[{...d.incidents[0],resolvedAt:'2026-09-21T10:30:00Z',resolutionObservedAt:'2026-09-21T13:00:00Z'}];
+ assert.equal(analyzeExposure(d).alerts.length,1);
+ d.asOf='2026-09-21T13:00:00Z';assert.equal(analyzeExposure(d).ignored[0].reason,'resolved');
+ delete d.incidents[0].resolutionObservedAt;assert.equal(analyzeExposure(d).alerts.length,1);assert.equal(analyzeExposure(d).warnings.length,1);
+ d.incidents[0].resolutionObservedAt='2026-09-21T10:00:00Z';assert.throws(()=>analyzeExposure(d),/incohérente/);
+});
+test('une fraction minuscule peut porter une exposition significative',()=>{
+ const d=demo().exposure;d.positions=[{...d.positions[0],valueUsd:1e12}];d.edges[0].fraction=4e-7;d.incidents=[d.incidents[0]];
+ const p=analyzeExposure(d).alerts[0].affected[0];assert.equal(p.fraction,4e-7);assert.equal(p.upperBoundUsd,400000);
+});
+test('chaque chemin ne cite que ses propres preuves, même avec des liens parallèles',()=>{
+ const d=demo().exposure;d.edges.push({from:'vault',to:'staked',kind:'dependency',fraction:1,evidence:'Dependency proof',observedAt:'2026-09-20T08:00:00Z'});
+ const paths=analyzeExposure(d).alerts.find(a=>a.incident.id==='i1').affected[0].paths;
+ assert.equal(paths.length,2);assert.ok(!paths[0].evidence.includes('Dependency proof'));assert.equal(paths[1].evidence[0],'Dependency proof');
+ d.edges.push({...d.edges[0]});assert.throws(()=>analyzeExposure(d),/dupliqué/);
+});
+test('allocation partielle signale un trou même si coverageComplete est déclaré',()=>{
+ const d=demo().exposure;d.edges[0].fraction=.1;assert.ok(analyzeExposure(d).gaps.some(g=>g.id==='vault'&&g.reason.includes('100')));
+});
