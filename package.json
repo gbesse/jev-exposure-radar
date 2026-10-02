@@ -1,6 +1,6 @@
 {
   "name": "jev-exposure-radar",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "description": "Trace DeFi incident exposure through sourced portfolio dependencies with optional Jev classification.",
@@ -16,6 +16,7 @@
     "start": "node src/server.js",
     "test": "node --test test/*.test.js",
     "check": "node --check src/server.js && node --check public/app.js",
-    "eval": "node src/evaluate.js"
+    "eval": "node src/evaluate.js",
+    "demo:timeline": "node examples/timeline-replay.js"
   }
 }
