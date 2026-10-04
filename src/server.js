@@ -14,8 +14,8 @@ export function createApp(){
     const host=req.headers.host||'';
     if(!/^(127\.0\.0\.1|localhost):\d+$/.test(host)){send(403,{error:'Hôte local requis'});return;}
     if(req.headers.origin&&req.headers.origin!==`http://${host}`){send(403,{error:'Origine refusée'});return;}
-    const path=new URL(req.url,`http://${host}`).pathname;
     try{
+      const path=new URL(req.url,`http://${host}`).pathname;
       if(req.method==='GET'){
         if(path==='/api/status'){send(200,{jevConfigured:Boolean(process.env.TYPESAFE_API_KEY),model:process.env.JEV_MODEL||'jev-1.13.0',mode:'read-only'});return;}
         if(path==='/api/demo'){send(200,JSON.parse(await readFile(new URL('data/demo.json',root),'utf8')));return;}

@@ -72,3 +72,9 @@ Projet compagnon : [jev-contract-graph](https://github.com/gbesse/jev-contract-g
 ## Replay temporel hors ligne
 
 `npm run demo:timeline` rejoue quatre instants du portefeuille synthétique dans `data/demo.json` et affiche les incidents connus, ceux ignorés et la borne haute d’exposition à chaque instant. Aucun appel réseau ni clé Jev ; les valorisations sont celles du fichier de démonstration, pas des cours historiques.
+
+## Revue du 4 octobre 2026
+
+Le calcul compte les chemins sur le graphe acyclique avant de les énumérer et ignore les branches qui ne peuvent pas atteindre la cible. Il rejette plus de 2 000 chemins par couple position/cible et borne l’ensemble de l’analyse à 100 000 étapes de parcours : un dépassement produit une erreur explicite, jamais un résultat partiel. Un test couvre un graphe synthétique avec plus d’un milliard de chemins sans lien avec la cible.
+
+Dans les alertes du rapport, `resolvedAt` et `resolutionObservedAt` sont omis tant que la résolution n’a pas été observée à la date du replay. L’entrée originale reste inchangée et reste incluse dans un dossier exporté. Une cible HTTP malformée reçoit une erreur 400 sans arrêter le serveur. Les 23 tests hors ligne, le plan d’évaluation et l’exemple de replay passent ; aucun nouvel appel Jev n’a été nécessaire pour ces corrections.

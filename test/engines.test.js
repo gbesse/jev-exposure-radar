@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
+import {spawnSync} from 'node:child_process';
 import {analyzeExposure} from '../src/exposure.js';
 const fixture=JSON.parse(await readFile(new URL('../data/demo.json',import.meta.url),'utf8'));
 const demo=()=>structuredClone(fixture);
@@ -41,4 +42,47 @@ test('chaque chemin ne cite que ses propres preuves, même avec des liens parall
 });
 test('allocation partielle signale un trou même si coverageComplete est déclaré',()=>{
  const d=demo().exposure;d.edges[0].fraction=.1;assert.ok(analyzeExposure(d).gaps.some(g=>g.id==='vault'&&g.reason.includes('100')));
+});
+
+
+test('le rapport de replay masque les métadonnées de résolution encore inconnues',()=>{
+ const d=demo().exposure;d.incidents=[{...d.incidents[0],resolvedAt:'2026-09-21T10:30:00Z',resolutionObservedAt:'2026-09-21T13:00:00Z'}];
+ const report=analyzeExposure(d);
+ assert.equal(report.alerts.length,1);
+ assert.ok(!Object.hasOwn(report.alerts[0].incident,'resolvedAt'));
+ assert.ok(!Object.hasOwn(report.alerts[0].incident,'resolutionObservedAt'));
+ assert.equal(d.incidents[0].resolvedAt,'2026-09-21T10:30:00Z');
+});
+
+
+function branchingGraph(layers){
+ const d=demo().exposure,observedAt='2026-09-20T08:00:00Z';
+ d.nodes=[{id:'root',label:'Root',coverageComplete:true},{id:'target',label:'Target',coverageComplete:true}];d.edges=[];
+ let previous=['root'];
+ for(let i=0;i<layers;i++){
+  const next=[`a${i}`,`b${i}`];
+  for(const id of next)d.nodes.push({id,label:id,coverageComplete:true});
+  for(const from of previous)for(const to of next)d.edges.push({from,to,kind:'dependency',fraction:1,evidence:'Synthetic branch',observedAt});
+  previous=next;
+ }
+ d.positions=[{id:'p',node:'root',valueUsd:100,observedAt}];
+ d.incidents=[{...d.incidents[0],target:'target'}];
+ return d;
+}
+test('un graphe à un milliard de chemins sans cible termine sans exploration exhaustive',()=>{
+ const input=branchingGraph(30);
+ // A subprocess timeout also contains a future synchronous traversal regression.
+ const moduleUrl=new URL('../src/exposure.js',import.meta.url).href;
+ const script=`import {readFileSync} from 'node:fs'; import {analyzeExposure} from ${JSON.stringify(moduleUrl)}; console.log(analyzeExposure(JSON.parse(readFileSync(0,'utf8'))).alerts[0].status);`;
+ const run=spawnSync(process.execPath,['--input-type=module','-e',script],{input:JSON.stringify(input),encoding:'utf8',timeout:5000});
+ assert.ifError(run.error);assert.equal(run.status,0,run.stderr);assert.equal(run.stdout.trim(),'no-known-path');
+});
+test('un nombre excessif de chemins utiles est rejeté avant énumération',()=>{
+ const d=branchingGraph(12);d.incidents[0].target='a11';
+ assert.throws(()=>analyzeExposure(d),/Trop de chemins/);
+});
+test('le budget cumulé borne aussi les analyses avec beaucoup de positions',()=>{
+ const d=branchingGraph(10);d.incidents[0].target='a9';
+ d.positions=Array.from({length:100},(_,i)=>({...d.positions[0],id:`p${i}`}));
+ assert.throws(()=>analyzeExposure(d),/Analyse trop complexe/);
 });

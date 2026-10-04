@@ -37,3 +37,13 @@ test('serveur: analyse, import invalide, origine interdite, chemins privés',asy
 test('une erreur de certificat est explicite et ne désactive pas TLS',async()=>{
  await assert.rejects(()=>discoverMarkets(async()=>{throw Object.assign(new Error('fetch failed'),{cause:{code:'CERT_HAS_EXPIRED'}});}),/certificat TLS/);
 });
+
+
+test('une cible HTTP malformée ne termine pas le serveur',async t=>{
+ const app=createApp();app.listen(0,'127.0.0.1');await once(app,'listening');t.after(()=>{app.closeAllConnections();app.close();});
+ const base=`http://127.0.0.1:${app.address().port}`;
+ const status=await new Promise((resolve,reject)=>{
+  const q=httpRequest(base,{path:'//['},r=>{r.resume();resolve(r.statusCode);});q.on('error',reject);q.end();
+ });
+ assert.equal(status,400);assert.equal((await fetch(base+'/api/status')).status,200);
+});

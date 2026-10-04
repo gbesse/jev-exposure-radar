@@ -24,7 +24,22 @@ export function analyzeExposure(input) {
     for(const e of next)check(e.to);active.delete(id);visited.add(id);}
   for(const n of nodes)check(n.id);
   for(const p of positions){text(p.id,'position.id');assert(byId.has(p.node),'Position sans nœud');number(p.valueUsd,'position.valueUsd');assert(time(p.observedAt,'position.observedAt')<=asOf,'Position postérieure au replay');}
+  // Count paths once per target on the DAG, saturating above the output limit.
+  // Pruning zero-path branches prevents exponential exploration of dead ends.
+  const pathCounts=new Map();
+  function countPaths(id,target){
+    if(!pathCounts.has(target))pathCounts.set(target,new Map());
+    const memo=pathCounts.get(target);
+    if(memo.has(id))return memo.get(id);
+    const count=id===target?1:Math.min(2001,outgoing.get(id).reduce((sum,e)=>sum+countPaths(e.to,target),0));
+    memo.set(id,count);return count;
+  }
+  let traceSteps=0;
   function trace(id,target,path=[],weight=1,evidence=[]){
+    const count=countPaths(id,target);
+    if(count===0)return [];
+    assert(count<=2000,'Trop de chemins : simplifier le graphe');
+    assert(++traceSteps<=100000,'Analyse trop complexe : réduire les positions, incidents ou chemins');
     if(id===target)return [{nodes:[...path,id],fraction:weight,evidence}];
     const result=[];
     for(const e of outgoing.get(id)){
@@ -52,7 +67,9 @@ export function analyzeExposure(input) {
       const fraction=Math.min(1,paths.reduce((s,x)=>s+x.fraction,0));
       return {...p,fraction,upperBoundUsd:Math.min(p.valueUsd,Math.ceil(p.valueUsd*fraction*1e6)/1e6),paths:paths.map(path=>({...path,labels:path.nodes.map(n=>byId.get(n).label)}))};
     }).filter(p=>p.fraction>0);
-    alerts.push({incident,affected,upperBoundUsd:round(affected.reduce((s,p)=>s+p.upperBoundUsd,0)),status:affected.length?(incident.status==='confirmed'?'alert':'watch'):'no-known-path'});
+    const knownIncident={...incident};
+    if(resolutionObserved>asOf){delete knownIncident.resolvedAt;delete knownIncident.resolutionObservedAt;}
+    alerts.push({incident:knownIncident,affected,upperBoundUsd:round(affected.reduce((s,p)=>s+p.upperBoundUsd,0)),status:affected.length?(incident.status==='confirmed'?'alert':'watch'):'no-known-path'});
   }
   // Union bound across incidents, capped per position: never present sum of overlapping alerts as exact exposure.
   const total=positions.reduce((s,p)=>s+p.valueUsd,0);
